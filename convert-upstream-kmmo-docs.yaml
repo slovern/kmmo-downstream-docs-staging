@@ -1,0 +1,65 @@
+---
+- name: Synchronize and convert markdown docs
+  hosts: localhost
+  vars:
+     source_repo: https://github.com/rh-ecosystem-edge/kernel-module-management.git
+     source_branch: main
+     source_dir: ./temp/source
+     target_dir: ./temp/converted-adoc
+     output_dir: ./out
+  tasks:
+    - name: Clone the source repository
+      ansible.builtin.git:
+        repo: "{{ source_repo }}"
+        dest: "{{ source_dir }}"
+        version: "{{ source_branch }}"
+    - name: Synchronize content
+      ansible.posix.synchronize:
+        src: "{{ source_dir }}"
+        dest: "{{ target_dir }}"
+        delete: yes
+        recursive: yes
+        #define what to exclude from the target repo when copying
+        rsync_opts:
+          - "--exclude='api-hub/'"
+          - "--exclude='api/'"
+          - "--exclude='bundle-hub/'"
+          - "--exclude='bundle/'"
+          - "--exclude='ci/'"
+          - "--exclude='cmd/'"
+          - "--exclude='config/'"
+          - "--exclude='controllers/'"
+          - "--exclude='hack/'"
+          - "--exclude='internal/'"
+          - "--exclude='must-gather/'"
+          - "--exclude='vendor/'"
+    - name: Remove the source directory
+      ansible.builtin.file:
+        path: "{{ source_dir }}"
+        state: absent
+    - name: Find markdown files
+      ansible.builtin.find:
+        paths: "{{ target_dir }}"
+        patterns: "*.md"
+        recurse: true
+        file_type: file
+      register: md_files
+    - name: Convert markdown to asciidoc
+      ansible.builtin.shell:
+        cmd: while read i; do kramdoc "$i" -o "${i%.*}.adoc"; done
+        stdin: "{{ item.path }}"
+      loop: "{{ md_files.files }}"
+      changed_when: false
+    - name: Remove the markdown files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ md_files.files }}"
+    - name: Copy docs to out folder
+      ansible.builtin.copy:
+        src: "{{ target_dir }}/source/docs"
+        dest: "{{ output_dir }}"
+    - name: Clean up temp folder
+      file:
+        state: absent
+        path: "{{ target_dir }}"
