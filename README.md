@@ -10,7 +10,7 @@ pip install ansible-lint
 gem install kramdown-asciidoc
 ```
 
-Fork this repo.
+Fork this repo to your own copy and clone the fork locally.
 
 Change to the `/kmmo-downstream-docs-staging` repo dir:
 
