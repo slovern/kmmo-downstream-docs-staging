@@ -10,7 +10,7 @@ pip install ansible-lint
 gem install kramdown-asciidoc
 ```
 
-Clone this repo: 
+Fork this repo: 
 
 ```cmd
 git clone git@github.com:aireilly/kmmo-downstream-docs-staging.git
