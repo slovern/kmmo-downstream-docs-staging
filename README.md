@@ -31,4 +31,4 @@ Run the conversion:
 ansible-playbook convert-upstream-kmmo-docs.yaml
 ```
 
-Converted AsciiDoc files are in the `out/docs/` folder.
+Converted AsciiDoc files are in the `/out/docs/` folder.
